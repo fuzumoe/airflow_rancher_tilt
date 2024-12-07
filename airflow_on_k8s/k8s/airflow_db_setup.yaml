@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: airflow-init
+  namespace: airflow  # Ensure the namespace exists before applying
+spec:
+  containers:
+  - name: airflow-init
+    image: apache/airflow:2.7.0
+    env:
+    - name: AIRFLOW__DATABASE__SQL_ALCHEMY_CONN
+      value: postgresql+psycopg2://airflow:airflow@postgres/airflow  # Update the credentials if needed
+    command: ["/bin/bash", "-c"]
+    args:
+      - |
+        set -e
+        echo "Initializing Airflow database..."
+        airflow db init &&
+        echo "Creating admin user..." &&
+        airflow users create \
+          --username admin \
+          --firstname Adam \
+          --lastname Fuzum \
+          --role Admin \
+          --email admin@admin.com \
+          --password secret;
+        echo "Airflow initialization complete!";
+    volumeMounts:
+    - name: dags-volume
+      mountPath: /opt/airflow/dags  # Mounting to the default Airflow DAGs directory
+  volumes:
+  - name: dags-volume
+    hostPath:
+      path: /mnt/wsl/rancher-desktop/dags
+      type: Directory
+  restartPolicy: OnFailure  # Retrying in case of transient errors

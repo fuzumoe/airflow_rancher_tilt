@@ -1,0 +1,32 @@
+# Apply namespace configs, create volumes, and RBAC
+k8s_yaml([
+    './k8s/namespace.yaml',
+    './k8s/configuration.yaml',
+    './k8s/persistent_volume.yaml', 
+    './k8s/role_based_access_control.yaml',
+])
+
+# Apply databases and initialize Airflow database
+k8s_yaml([
+    './k8s/postgres.yaml',
+    './k8s/airflow_db_setup.yaml',
+])
+
+# Apply Scheduler, web service, and Airflow web
+k8s_yaml([
+    './k8s/airflow_scheduler.yaml',
+    './k8s/airflow_web_service.yaml',
+    './k8s/airflow_web_access.yaml',
+]) 
+
+# Port-forward the PostgreSQL service
+k8s_resource(
+    workload="postgres",  # Match the name of your Kubernetes resource (service or pod)
+    port_forwards=[5432]  # Map local port 5432 to the service or pod port
+)
+
+# Port-forward the Airflow web service
+k8s_resource(
+    workload="airflow-web",  # Match the name of your Kubernetes resource (service or pod)
+    port_forwards=[8097]  # Map local port 8097 to the service or pod port
+)

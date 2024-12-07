@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: airflow-web-service
+  namespace: airflow
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080          # The port the service listens on
+      targetPort: 8080    # The port the container is using
+      protocol: TCP
+  selector:
+    app: airflow-web

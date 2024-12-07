@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-web
+  namespace: airflow  # Ensure the namespace exists
+spec:
+  replicas: 1  # Adjust based on your requirements
+  selector:
+    matchLabels:
+      app: airflow-web
+  template:
+    metadata:
+      labels:
+        app: airflow-web
+    spec:
+      containers:
+      - name: airflow-web
+        image: apache/airflow:2.7.0
+        command: ["airflow", "webserver"]
+        ports:
+        - containerPort: 8080  # Default port for Airflow webserver
+        envFrom:
+        - configMapRef:
+            name: airflow-config  # Ensure this ConfigMap is defined
+        volumeMounts:
+        - name: dags-volume
+          mountPath: /opt/airflow/dags  # Default DAGs directory
+      volumes:
+      - name: dags-volume
+        persistentVolumeClaim:
+          claimName: airflow-dags-pvc
+      restartPolicy: Always
